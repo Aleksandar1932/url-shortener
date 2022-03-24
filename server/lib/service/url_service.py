@@ -41,9 +41,7 @@ def get_long_url(short_url: str) -> typing.Optional[str]:
 
     long_url = r.hgetall(short_url)
     if long_url == {}:
-        return None
-
-    print(long_url)
+        raise ValueError("Short url does not exist.")
 
     return long_url['long_url']
 
