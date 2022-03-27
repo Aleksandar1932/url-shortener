@@ -1,32 +1,40 @@
+import os
 import typing
+import logging
 
 from redis import Redis
 
 from lib.utils.generators import generate_passphrase, generate_short_url
 
-r = Redis(host='localhost', port=6379, db=0, decode_responses=True)
+r = Redis(host=os.getenv('REDIS_HOST'), port=int(
+    os.getenv('REDIS_PORT')), db=0, decode_responses=True)
+
 
 def create_short_url(long_url: str) -> str:
     """
-    Shorten a long url.
+    Create short url for a given long url.
 
     Args:
-        long_url (str): The long url to shorten.
+        long_url (str): The long url to be shortened.
 
     Returns:
-        str: The shortened url.
-        passphrase (str): The passphrase for the shortened url.
+        short_url (str): The shortened url.
+        long_url (str): The long url.
+        passphrase (str): The passphrase for that particular shortened url.
     """
 
     passphrase = generate_passphrase()
     short_url = generate_short_url()
 
     while short_url in r.keys():
+        logger = logging.getLogger(__name__)
+        logger.debug("Short url colision.")
         short_url = generate_short_url()
 
     r.hmset(short_url, {"long_url": long_url, "passphrase": passphrase})
 
     return short_url, long_url, passphrase
+
 
 def get_long_url(short_url: str) -> typing.Optional[str]:
     """
@@ -45,7 +53,8 @@ def get_long_url(short_url: str) -> typing.Optional[str]:
 
     return long_url['long_url']
 
-def update_short_url(short_url: str, new_long_url:str, secret: str) -> str:
+
+def update_short_url(short_url: str, new_long_url: str, secret: str) -> str:
     """
     Update the long url for a given short url.
 
@@ -60,10 +69,10 @@ def update_short_url(short_url: str, new_long_url:str, secret: str) -> str:
 
     long_url = r.hgetall(short_url)
     if long_url is None:
-        raise ValueError("Short url does not exist.")
-    
+        raise Exception("Short url does not exist.")
+
     if long_url['passphrase'] != secret:
-        raise ValueError("Invalid secret.")
+        raise Exception("Invalid secret.")
 
     r.hmset(short_url, {"long_url": new_long_url, "passphrase": secret})
 
