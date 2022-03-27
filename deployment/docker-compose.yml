@@ -1,0 +1,22 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  api:
+    build: ../server
+    ports:
+      - "8000:80"
+    env_file:
+      - api.env
+    links:
+      - redis
+    networks:
+      - url-shortener
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - url-shortener
+
+networks:
+  url-shortener:
+    driver: bridge
