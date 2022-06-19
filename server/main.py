@@ -5,10 +5,27 @@ from lib.service.url_service import create_short_url, get_long_url, update_short
 from api.models.request import UpdateURL
 from api.models.response import ShortenURL
 
-app = FastAPI()
+app = FastAPI(
+    title="url-shortener",
+    version="0.0.1",
+    description="🚀 Simple and extensible URL shortener, which enables editable short URLs.",
+    contact={
+        "name": "Aleksandar Ivanovski",
+        "url": "http://ivanovski.tech",
+        "email": "aleksandar.ivanovski123@gmail.com",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+)
 
 
-@app.get("/{short_url}")
+@app.get(
+    "/{short_url}",
+    response_class=RedirectResponse,
+    response_description="Redirect to long url.",
+)
 def read_root(short_url: str):
     """
     Redirect to the long url corresponding to `short_url`.
@@ -39,7 +56,8 @@ def update(short_url, url: UpdateURL):
     """
     try:
         short_url, long_url = update_short_url(
-            short_url, url.new_long_url, url.passphrase)
+            short_url, url.new_long_url, url.passphrase
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     return ShortenURL(short_url=short_url, long_url=long_url, passphrase=url.passphrase)

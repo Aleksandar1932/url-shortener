@@ -2,7 +2,7 @@
 name = "server"
 version = "0.1.0"
 description = "Backend for the URL shortener"
-authors = ["aleksandarivanovski <aleksandarivanovski@codechem.com>"]
+authors = ["aleksandarivanovski <aleksandar.ivanovski123@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]

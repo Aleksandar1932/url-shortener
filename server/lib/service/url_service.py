@@ -5,9 +5,14 @@ import logging
 from redis import Redis
 
 from lib.utils.generators import generate_passphrase, generate_short_url
+from lib.utils.url import fix_url
 
-r = Redis(host=os.getenv('REDIS_HOST'), port=int(
-    os.getenv('REDIS_PORT')), db=0, decode_responses=True)
+r = Redis(
+    host=os.getenv("REDIS_HOST"),
+    port=int(os.getenv("REDIS_PORT")),
+    db=0,
+    decode_responses=True,
+)
 
 
 def create_short_url(long_url: str) -> str:
@@ -51,7 +56,8 @@ def get_long_url(short_url: str) -> typing.Optional[str]:
     if long_url == {}:
         raise ValueError("Short url does not exist.")
 
-    return long_url['long_url']
+    url = long_url["long_url"]
+    return fix_url(url)
 
 
 def update_short_url(short_url: str, new_long_url: str, secret: str) -> str:
@@ -71,7 +77,7 @@ def update_short_url(short_url: str, new_long_url: str, secret: str) -> str:
     if long_url is None:
         raise Exception("Short url does not exist.")
 
-    if long_url['passphrase'] != secret:
+    if long_url["passphrase"] != secret:
         raise Exception("Invalid secret.")
 
     r.hmset(short_url, {"long_url": new_long_url, "passphrase": secret})
